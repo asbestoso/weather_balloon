@@ -23,8 +23,6 @@ CHANGE_OBSERVATORY_CHANCE = 0.05
 OBSERVATORIES = normalizer.OBSERVATORIES
 
 
-
-
 def create_lines(lines):
   timestamp = datetime.datetime.utcnow()
   temp = (TEMP_UPPER + TEMP_LOWER) / 2
