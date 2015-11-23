@@ -28,7 +28,7 @@ def consume(filename, db):
           pass
 
 def parseLine(line):
-  data = line.split('|')
+  data = line.strip().split('|')
   params = {
     'timestamp': datetime.strptime(data.pop(0), '%Y-%m-%dT%H:%M'),
     'location': data.pop(0).split(','),
