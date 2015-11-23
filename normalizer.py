@@ -1,76 +1,69 @@
-
-
-
-
-OBSERVATORIES = ['AU', 'US', 'FR', 'XX']
+#!/usr/bin/python
+CELSIUS = 'C'
+FAHRENHEIT = 'F'
+KELVIN = 'K'
+METER = 'M'
+KM = 'KM'
+MILE = 'Mi'
 
 OBSERVATORY_UNITS = {}
+OBSERVATORY_UNITS['AU'] = (CELSIUS, KM)
+OBSERVATORY_UNITS['US'] = (FAHRENHEIT, MILE)
+OBSERVATORY_UNITS['FR'] = (KELVIN, METER)
 
-# TODO: make these classes
-OBSERVATORY_UNITS['AU'] = {
-  'temp_unit': 'celsius'
-  'temp_symbol': 'C'
-  'localize_temperture': kelvin_to_celsius
-  'standardize_temperture': celsius_to_kelvin
-  'localize_distance': m_to_km
-  'standardize_distance': km_to_m
-}
-OBSERVATORY_UNITS['US'] = {
-  'temp_unit': 'fahrenheit'
-  'temp_symbol': 'F'
-  'localize_temperture': kelvin_to_fahrenheit
-  'standardize_temperture': fahrenheit_to_kelvin
-  'localize_distance': m_to_miles
-  'standardize_distance': miles_to_m
-}
-OBSERVATORY_UNITS['FR'] = {
-  'temp_unit': 'kelvin'
-  'temp_symbol': 'K'
-  'localize_temperture': noop
-  'standardize_temperture': noop
-  'localize_distance': m_to_km
-  'standardize_distance': km_to_m
-}
-OBSERVATORY_UNITS['XX'] = {
-  'temp_unit': 'kelvin'
-  'temp_symbol': 'K'
-  'localize_temperture': kelvin_to_celsius
-  'standardize_temperture': celsius_to_kelvin
-  'localize_distance': m_to_km
-  'standardize_distance': km_to_m
-}
+def standardize_temperture(value, unit):
+  if unit is CELSIUS:
+    return value + 273.15
+  elif unit is FAHRENHEIT:
+    return (value + 459.67) * (5.0/9)
+  return value
 
+def localize_temperture(value, unit):
+  if unit is CELSIUS:
+    return value - 273.15
+  elif unit is FAHRENHEIT:
+    return value * (9.0/5) - 459.67
+  return value
 
-def kelvin_to_celsius(kelvin):
+def standardize_distance(value, unit):
+  if unit is KM:
+    return value / 1000
+  elif unit is MILE:
+    return value / 0.00062137
+  return value
 
-def kelvin_to_fahrenheit(kelvin):
+def localize_distance(value, unit):
+  if unit is KM:
+    return value * 1000
+  elif unit is MILE:
+    return value * 0.000652137
+  return value
 
-def celsius_to_kelvin(celsius):
-
-def fahrenheit_to_kelvin(fahrenheit):
-
-
-def noop(original):
-  return original
-
-
-class normalizer(Object):
+class Datum:
+  local_temperture_unit = KELVIN
+  local_distance_unit = KM
 
   def __init__(self, observatory, timestamp, location, temperture, normalized=False):
     self.observatory = observatory
     self.timestamp = timestamp
     self.location = location
     self.temperture = temperture
-    self.normalized = normalized
 
-    if not self.normalized:
-      #normalize
+    if self.observatory in OBSERVATORY_UNITS:
+      self.local_temperture_unit = OBSERVATORY_UNITS[self.observatory][0]
+      self.local_distance_unit = OBSERVATORY_UNITS[self.observatory][1]
 
-  def normalize_to()
+    if not normalized:
+      self.temperture = standardize_temperture(self.temperture, local_temperture)
+      self.location[0] = standardize_distance(self.location[0], local_distance)
+      self.location[1] = standardize_distance(self.location[1], local_distance)
 
-
-
-
-
-def denormalize(observatory, timestamp, location, temperture):
-
+  def localized_string(self):
+    data = {
+      'timestamp': self.timestamp.strftime('%Y-%m-%dT%H:%M'),
+      'x': localize_distance(self.location[0], self.local_distance_unit),
+      'y': localize_distance(self.location[1], self.local_distance_unit),
+      'temperture': localize_temperture(self.temperture, self.local_temperture_unit),
+      'observatory': self.observatory,
+    }
+    return "{timestamp}|{x:d},{y:d}|{temperture:d}|{observatory}".format(**data)

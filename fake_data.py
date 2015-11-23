@@ -3,14 +3,13 @@ import os
 import sys
 import random
 import normalizer
-from datetime import datatime, timedelta
-
+from datetime import datetime, timedelta
 
 #seconds
 TIME_DELTA_LOWER = 5
 TIME_DELTA_UPPER = 300
 #meters
-MAX_X = MAX_Y = = 10 * 1000 * 1000
+MAX_X = MAX_Y = 10 * 1000 * 1000
 TRAVEL_DELTA_LOWER = -50
 TRAVEL_DELTA_UPPER = 50
 #kelvin
@@ -20,14 +19,13 @@ TEMP_DELTA_LOWER = -5
 TEMP_DELTA_UPPER = 5
 
 CHANGE_OBSERVATORY_CHANCE = 0.05
-OBSERVATORIES = normalizer.OBSERVATORIES
-
+OBSERVATORIES = normalizer.OBSERVATORY_UNITS.keys()
 
 def create_lines(lines):
-  timestamp = datetime.datetime.utcnow()
+  timestamp = datetime.utcnow()
   temp = (TEMP_UPPER + TEMP_LOWER) / 2
   observatory = OBSERVATORIES[0]
-  location = (0,0)
+  location = [0,0]
 
   for i in range(lines):
     time_delta = random.randrange(TIME_DELTA_LOWER, TIME_DELTA_UPPER)
@@ -49,10 +47,10 @@ def create_lines(lines):
       location[1] += MAX_Y
 
     if random.randrange(0, 100) < (CHANGE_OBSERVATORY_CHANCE * 100):
-      observatory = random.randrange(0, len(OBSERVATORIES))
+      observatory = OBSERVATORIES[random.randrange(0, len(OBSERVATORIES))]
 
-    yeild str(normalizer.denormalize(observatory, timestamp, location, temp))
-
+    datum = normalizer.Datum(observatory, timestamp, location, temp, True)
+    yield datum.localized_string()
 
 
 def generate_data(out, lines):
@@ -63,9 +61,16 @@ def generate_data(out, lines):
     for line in data:
       f.write(line + '\n')
 
+def scramble_file(out):
+  pass
 
 if __name__ == "__main__":
-  filename = sys.argv[1]
-  lines = sys.argv[2]
+  if len(sys.argv) < 3:
+    print "Please provide the <output path> and <number of lines> as parameters"
+  else:
 
-  generate_data(filename, lines)
+    filename = sys.argv[1]
+    lines = int(sys.argv[2])
+
+    generate_data(filename, lines)
+    scramble_file(filename)
