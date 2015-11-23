@@ -37,7 +37,7 @@ def create_lines(lines):
 
     temp += temp_delta
     if temp < TEMP_LOWER:
-      temp += TEMP
+      temp = TEMP_LOWER
 
     location[0] += x_delta
     if location[0] < 0:
@@ -59,6 +59,7 @@ def generate_data(out, lines):
   mode = 'a' if os.path.exists(out) else 'w+'
   with open(out, mode) as f:
     for line in data:
+      # python will buffer these writes
       f.write(line + '\n')
 
 def scramble_file(out):

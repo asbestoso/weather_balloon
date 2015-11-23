@@ -61,9 +61,9 @@ class Datum:
   def localized_string(self):
     data = {
       'timestamp': self.timestamp.strftime('%Y-%m-%dT%H:%M'),
-      'x': localize_distance(self.location[0], self.local_distance_unit),
-      'y': localize_distance(self.location[1], self.local_distance_unit),
-      'temperture': localize_temperture(self.temperture, self.local_temperture_unit),
+      'x': int(localize_distance(self.location[0], self.local_distance_unit)),
+      'y': int(localize_distance(self.location[1], self.local_distance_unit)),
+      'temperture': int(localize_temperture(self.temperture, self.local_temperture_unit)),
       'observatory': self.observatory,
     }
-    return "{timestamp}|{x:d},{y:d}|{temperture:d}|{observatory}".format(**data)
+    return "{timestamp}|{x},{y}|{temperture}|{observatory}".format(**data)
