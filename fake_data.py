@@ -69,7 +69,6 @@ if __name__ == "__main__":
   if len(sys.argv) < 3:
     print "Please provide the <output path> and <number of lines> as parameters"
   else:
-
     filename = sys.argv[1]
     lines = int(sys.argv[2])
 
