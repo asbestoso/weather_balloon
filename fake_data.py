@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 #seconds
 TIME_DELTA_LOWER = 5
-TIME_DELTA_UPPER = 300
+TIME_DELTA_UPPER = 30
 #meters
 MAX_X = MAX_Y = 10 * 1000 * 1000
 TRAVEL_DELTA_LOWER = -50

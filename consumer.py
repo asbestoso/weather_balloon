@@ -10,8 +10,8 @@ try:
 except ImportError:
   print 'Please install/make availble sqlite3'
 
-# DB_WRITE_BUFFER = []
-# BUFFER_SIZE = 1000 # number of rows to batch
+DB_WRITE_BUFFER = []
+BUFFER_SIZE = 1000 # number of rows to batch
 
 def consume(filename, db):
   with open(filename, 'r') as f:
@@ -26,6 +26,7 @@ def consume(filename, db):
         except:
           # TODO better error handling / parsing corrupted data
           pass
+      dumpBuffer()
 
 def parseLine(line):
   data = line.strip().split('|')
@@ -37,20 +38,25 @@ def parseLine(line):
   }
   return params
 
-
-# TODO clean up this mess
 def insertDatum(datum, cursor):
-  # if len(DB_WRITE_BUFFER) < BUFFER_SIZE:
-  #   DB_WRITE_BUFFER.append()
-  data = datum.to_hash()
+  if len(DB_WRITE_BUFFER) >= BUFFER_SIZE:
+    dumpBuffer()
+  buffer_row = (
+    data.timestamp,
+    data.location_x,
+    data.location_y,
+    data.temperature,
+    data.observatory)
+  DB_WRITE_BUFFER.append(buffer_row)
+
+def dumpBuffer():
   command = """
     INSERT INTO
       Weather(
         timestamp, location_x, location_y, temperature, observatory)
-      VALUES(
-        '{timestamp}',{location_x},{location_y},{temperature},'{observatory}');
-    """.format(**data)
-  cursor.execute(command)
+      VALUES(?, ?, ?, ?, ?);"""
+  cursor.executemany(command, DB_WRITE_BUFFER)
+  DB_WRITE_BUFFER = []
 
 def initializeDB(cursor):
   cursor.execute("DROP TABLE IF EXISTS Weather;")

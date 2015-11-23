@@ -40,9 +40,6 @@ def localize_distance(value, unit):
   return value
 
 class Datum:
-  local_temperature_unit = KELVIN
-  local_distance_unit = KM
-
   def __init__(self, observatory, timestamp, location, temperature, normalized=False):
     self.observatory = observatory
     self.timestamp = timestamp
@@ -53,6 +50,9 @@ class Datum:
     if self.observatory in OBSERVATORY_UNITS:
       self.local_temperature_unit = OBSERVATORY_UNITS[self.observatory][0]
       self.local_distance_unit = OBSERVATORY_UNITS[self.observatory][1]
+    else:
+      self.local_temperature_unit = KELVIN
+      self.local_distance_unit = KM
 
     if not normalized:
       self.temperature = standardize_temperature(self.temperature, self.local_temperature_unit)
