@@ -4,6 +4,7 @@ import os
 import sys
 import normalizer
 from datetime import datetime
+from math import hypot
 import sqlite3 as lite
 
 def print_data(db, temperature, distance):
@@ -14,7 +15,7 @@ def print_data(db, temperature, distance):
 
     while True:
       row = cursor.fetchone()
-      if row == None:
+      if row is None:
           break
 
       timestamp = datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S')
@@ -28,6 +29,34 @@ def print_data(db, temperature, distance):
         True
       )
       print datum.localized_string(temperature, distance)
+
+#fetchmany
+def compute_distance(db):
+  dist = 0
+  with db:
+    cursor = db.cursor()
+    cursor.execute("SELECT location_x, location_y FROM Weather ORDER BY timestamp ASC")
+
+    row = cursor.fetchone()
+    if row is None:
+      return dist
+    prev_x = row[0]
+    prev_y = row[1]
+
+    while True:
+      row = cursor.fetchone()
+      if row is None:
+        break
+
+      x_delta = prev_x - row[0]
+      y_delta = prev_y - row[1]
+      dist += hypot(x_delta, y_delta)
+
+      prev_x = row[0]
+      prev_y = row[1]
+  return dist
+
+
 
 if __name__ == "__main__":
   if len(sys.argv) < 3:

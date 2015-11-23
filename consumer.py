@@ -12,6 +12,13 @@ except ImportError:
 
 DB_WRITE_BUFFER = []
 BUFFER_SIZE = 1000 # number of rows to batch
+AGGREGATE = {
+  'entries': 0
+  'mean_temp': 0
+  'total_dist': 0
+  'observatories': {}
+}
+
 
 def consume(filename, db):
   with open(filename, 'r') as f:
@@ -23,10 +30,12 @@ def consume(filename, db):
         try:
           datum = normalizer.Datum(**parseLine(line))
           insertDatum(datum, cursor)
+          aggregate(datum)
         except:
           # TODO better error handling / parsing corrupted data
           pass
       dumpBuffer()
+      storeAggregrate()
 
 def parseLine(line):
   data = line.strip().split('|')
@@ -37,6 +46,23 @@ def parseLine(line):
     'observatory': data.pop(0)
   }
   return params
+
+def aggregate(datum):
+  AGGREGATE['mean_temp'] = (AGGREGATE['mean_temp'] * AGGREGATE['entries']) /
+                           (AGGREGATE['entries']+1)
+  AGGREGATE['entries'] += 1
+
+  if not 'min_temp' in AGGREGATE or AGGREGATE['min_temp'] > datum.temperature:
+    AGGREGATE['min_temp'] = datum.temperature
+  if not 'max_temp' in AGGREGATE or AGGREGATE['max_temp'] < datum.temperature:
+    AGGREGATE['max_temp'] = datum.temperature
+
+  observatories = AGGREGATE['observatories']
+  observatories.setdefault(datum.observatory, 0)
+  observatories[datum.observatories] += 1
+
+def storeAggregate():
+  pass
 
 def insertDatum(datum, cursor):
   if len(DB_WRITE_BUFFER) >= BUFFER_SIZE:
