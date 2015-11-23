@@ -55,16 +55,38 @@ class Datum:
       self.local_distance_unit = OBSERVATORY_UNITS[self.observatory][1]
 
     if not normalized:
-      self.temperature = standardize_temperature(self.temperature, local_temperature)
-      self.location_x = standardize_distance(self.location_x, local_distance)
-      self.location_y = standardize_distance(self.location_y, local_distance)
+      self.temperature = standardize_temperature(self.temperature, self.local_temperature_unit)
+      self.location_x = standardize_distance(self.location_x, self.local_distance_unit)
+      self.location_y = standardize_distance(self.location_y, self.local_distance_unit)
 
   def localized_string(self):
     data = {
       'timestamp': self.timestamp.strftime('%Y-%m-%dT%H:%M'),
-      'x': int(localize_distance(self.location[0], self.local_distance_unit)),
-      'y': int(localize_distance(self.location[1], self.local_distance_unit)),
+      'x': int(localize_distance(self.location_x, self.local_distance_unit)),
+      'y': int(localize_distance(self.location_y, self.local_distance_unit)),
       'temperature': int(localize_temperature(self.temperature, self.local_temperature_unit)),
       'observatory': self.observatory,
     }
     return "{timestamp}|{x},{y}|{temperature}|{observatory}".format(**data)
+
+  def to_hash(self):
+    return {
+      'timestamp': self.timestamp,
+      'location_x': int(self.location_x),
+      'location_y': int(self.location_y),
+      'temperature': int(self.temperature),
+      'observatory': self.observatory,
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
