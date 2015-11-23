@@ -28,6 +28,7 @@ def createLines(lines):
   location = [0,0]
 
   for i in range(lines):
+    # random simulate the movement of the balloon, adjustable via constants
     time_delta = random.randrange(TIME_DELTA_LOWER, TIME_DELTA_UPPER)
     temp_delta = random.randrange(TEMP_DELTA_LOWER, TEMP_DELTA_UPPER)
     x_delta = random.randrange(TRAVEL_DELTA_LOWER, TRAVEL_DELTA_UPPER)
@@ -63,6 +64,12 @@ def generateData(out, lines):
       f.write(line + '\n')
 
 def scrambleFile(out):
+  """TODO
+  - read file from start to end
+  - generate a random number and jump that many lines
+  - swap current line with previous line
+  - use random number for chance of garbling the data on the line
+  """
   pass
 
 if __name__ == "__main__":

@@ -39,18 +39,12 @@ class BufferedWrites:
     self.cursor.executemany(command, self.buffer)
     self.buffer = []
 
-def parseLine(line):
-  data = line.strip().split('|')
-  params = {
-    'timestamp': datetime.strptime(data.pop(0), '%Y-%m-%dT%H:%M'),
-    'location': data.pop(0).split(','),
-    'temperature': data.pop(0),
-    'observatory': data.pop(0)
-  }
-  return params
+class ParseException(Exception):
+    pass
 
-def consume(filename, cursor):
+def consume(filename, datastore):
   with open(filename, 'r') as f:
+    db = lite.connect(datastore)
     with db:
       cursor = db.cursor()
       initializeDB(cursor)
@@ -58,12 +52,26 @@ def consume(filename, cursor):
       # python read lines lazily
       for line in f:
         try:
-          datum = normalizer.Datum(**parseLine(line))
+          datum = parseLine(line)
           db_buffer.insertDatum(datum)
-        except:
-          # TODO more specific error handling / parsing corrupted data
-          pass
+        except ParseException:
+          # throw out bad data
+          print 'failed to parse:', line,
       db_buffer.dumpBuffer()
+
+# reads a log line and returns a normalized datum
+def parseLine(line):
+  try:
+    data = line.strip().split('|')
+    params = {
+      'timestamp': datetime.strptime(data.pop(0), '%Y-%m-%dT%H:%M'),
+      'location': data.pop(0).split(','),
+      'temperature': data.pop(0),
+      'observatory': data.pop(0)
+    }
+    return normalizer.Datum(**params)
+  except:
+    raise ParseException
 
 def initializeDB(cursor):
   cursor.execute("DROP TABLE IF EXISTS Weather;")
@@ -86,35 +94,6 @@ if __name__ == "__main__":
     # TODO print "Optionally, pass 'keep' as the third argument to append to datastore."
   else:
     filename = sys.argv[1]
-    db = lite.connect(sys.argv[2])
+    datastore = sys.argv[2]
+    consume(filename, datastore)
 
-    consume(filename, db)
-
-
-### TODO: try just using sql queries and custom aggregators if they are fast enough,
-### if too slow, then move this logic into BufferedWrites
-# AGGREGATE = {
-#   'entries': 0,
-#   'mean_temp': 0,
-#   'total_dist': 0,
-#   'observatories': {},
-# }
-
-# def aggregate(datum):
-#   global AGGREGATE
-#   AGGREGATE['mean_temp'] = (AGGREGATE['mean_temp'] * AGGREGATE['entries']) / (AGGREGATE['entries']+1)
-#   AGGREGATE['entries'] += 1
-
-#   if not 'min_temp' in AGGREGATE or AGGREGATE['min_temp'] > datum.temperature:
-#     AGGREGATE['min_temp'] = datum.temperature
-#   if not 'max_temp' in AGGREGATE or AGGREGATE['max_temp'] < datum.temperature:
-#     AGGREGATE['max_temp'] = datum.temperature
-
-#   observatories = AGGREGATE['observatories']
-#   observatories.setdefault(datum.observatory, 0)
-#   observatories[datum.observatory] += 1
-
-#   print AGGREGATE
-
-# def storeAggregate():
-#   print AGGREGATE
