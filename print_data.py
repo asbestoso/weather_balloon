@@ -30,7 +30,7 @@ def print_data(db, temperature, distance):
       )
       print datum.localized_string(temperature, distance)
 
-#fetchmany
+#TODO fetchmany, actually write a custom aggregator for this
 def compute_distance(db):
   dist = 0
   with db:

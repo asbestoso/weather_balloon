@@ -10,8 +10,8 @@ TIME_DELTA_LOWER = 5
 TIME_DELTA_UPPER = 30
 #meters
 MAX_X = MAX_Y = 10 * 1000 * 1000
-TRAVEL_DELTA_LOWER = -50
-TRAVEL_DELTA_UPPER = 50
+TRAVEL_DELTA_LOWER = -200
+TRAVEL_DELTA_UPPER = 600
 #kelvin
 TEMP_LOWER = 200
 TEMP_UPPER = 350
@@ -21,7 +21,7 @@ TEMP_DELTA_UPPER = 5
 CHANGE_OBSERVATORY_CHANCE = 0.05
 OBSERVATORIES = normalizer.OBSERVATORY_UNITS.keys()
 
-def create_lines(lines):
+def createLines(lines):
   timestamp = datetime.utcnow()
   temp = (TEMP_UPPER + TEMP_LOWER) / 2
   observatory = OBSERVATORIES[0]
@@ -35,12 +35,12 @@ def create_lines(lines):
 
     timestamp -= timedelta(seconds=time_delta)
 
-    temp += temp_delta
-    if temp < TEMP_LOWER:
-      temp = TEMP_LOWER
+    new_temp = temp + temp_delta
+    if new_temp > TEMP_LOWER and new_temp < TEMP_UPPER:
+      temp = new_temp
 
     location[0] += x_delta
-    if location[0] < 0:
+    if location[0] < 0: #wrap around globe
       location[0] += MAX_X
     location[1] += y_delta
     if location[1] < 0:
@@ -53,8 +53,8 @@ def create_lines(lines):
     yield datum.localized_string()
 
 
-def generate_data(out, lines):
-  data = create_lines(lines)
+def generateData(out, lines):
+  data = createLines(lines)
 
   mode = 'a' if os.path.exists(out) else 'w+'
   with open(out, mode) as f:
@@ -62,7 +62,7 @@ def generate_data(out, lines):
       # python will buffer these writes
       f.write(line + '\n')
 
-def scramble_file(out):
+def scrambleFile(out):
   pass
 
 if __name__ == "__main__":
@@ -72,5 +72,5 @@ if __name__ == "__main__":
     filename = sys.argv[1]
     lines = int(sys.argv[2])
 
-    generate_data(filename, lines)
-    scramble_file(filename)
+    generateData(filename, lines)
+    scrambleFile(filename)
